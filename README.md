@@ -9,6 +9,8 @@ Backup all postgress databases to separate files with gzip and have a sha256 has
     * Any backup less than 7 days old will be kept
     * Any backup less than 4 weeks old will be kept
     * Any backup "first day of month and is less than a year old" will be kept
+    * Rest of the backups will be deleted
+        * If you don't want to delete old backups you can safely remove the scripts part that deletes the old backups
 
 ## Usage
 

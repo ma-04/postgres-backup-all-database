@@ -24,6 +24,9 @@ for db in $(psql "sslmode=require host=$hostname port=$port dbname=postgres user
     #pg_dump "sslmode=require host=$hostname port=5432 dbname=$db user=$db_user" | gzip > "$db_backup/$db-$(date -I).sql.gz"
 done
 
+# The following will remove backups older than 7 days, except for Thursday backups from last month and first day of month backups from last year
+# remove backups older than 7 days, except for Thursday backups from last month and first day of month backups from last year
+# Can be safely removed if you don't want to remove old backups
 list_of_backups=$(ls -l "${backup_dir}" | grep -oE "[0-9]{4}-[0-9]{2}-[0-9]{2}$")
 
 for backup in "${list_of_backups[@]}"; do
