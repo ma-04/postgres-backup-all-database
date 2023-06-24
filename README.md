@@ -27,7 +27,7 @@ Suggested Reading:
 * [Migrate Using Pg_dump and pg_restore](https://learn.microsoft.com/en-us/azure/postgresql/migrate/how-to-migrate-using-dump-and-restore)
 * [Best practices for pg_dump and pg_restore ](https://learn.microsoft.com/en-us/azure/postgresql/flexible-server/how-to-pgdump-restore)
 ## Restore
-To restore the database you have to gunzip the file and then run the following command:
+To restore the database you have to gunzip the file and then restore it, you can use the following command to gunzip the file:
 ```
 gunzip <file>.sql.gz
 ```
