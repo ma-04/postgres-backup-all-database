@@ -1,6 +1,15 @@
 # postgres-backup-all-database
 Backup all postgress databases to separate files with gzip and have a sha256 hash for all the files
 
+## Features
+* Backup all databases to separate files
+* Compress the files with gzip
+* Create a sha256 hash for all the files
+* Periodically delete old backups on spanned time
+    * Any backup less than 7 days old will be kept
+    * Any backup less than 4 weeks old will be kept
+    * Any backup "first day of month and is less than a year old" will be kept
+
 ## Usage
 
 Create a file with the name `.pgpass` in your home directory with the following content:
