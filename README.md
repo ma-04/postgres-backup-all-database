@@ -44,5 +44,5 @@ gunzip <file>.sql.gz
 ```
 Then you can run the following command to restore the database:
 ```
-pg_restore -h <host> -p <port> -U <user> -d <database> <file>.sql
+pg_restore -v --no-owner --host=mydemoserver.postgres.database.azure.com --port=5432 --username=mylogin@mydemoserver --dbname=database3 <file>.sql
 ```

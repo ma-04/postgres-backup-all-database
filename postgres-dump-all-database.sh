@@ -19,7 +19,7 @@ mkdir -p "$db_backup"
 
 for db in $(psql "sslmode=require host=$hostname port=$port dbname=postgres user=$db_user" -t -c "select datname from pg_database where not datistemplate" | grep '\S' | awk '{$1=$1};1' | grep -vE $excluded_databases); do
     echo "Backing up $db"
-    pg_dump "sslmode=require host=$hostname port=5432 dbname=$db user=$db_user" | gzip > "$db_backup/$db-$(date -I).sql.gz"
+    pg_dump -Fc --create "sslmode=require host=$hostname port=5432 dbname=$db user=$db_user" | gzip > "$db_backup/$db-$(date -I).sql.gz"
     sha256sum "$db_backup/$db-$(date -I).sql.gz" | sed 's, .*/,  ,' > "$db_backup/$db-$(date -I).sql.gz.sha256"
     #pg_dump "sslmode=require host=$hostname port=5432 dbname=$db user=$db_user" | gzip > "$db_backup/$db-$(date -I).sql.gz"
 done
