@@ -38,11 +38,7 @@ Suggested Reading:
 * [Migrate Using Pg_dump and pg_restore](https://learn.microsoft.com/en-us/azure/postgresql/migrate/how-to-migrate-using-dump-and-restore)
 * [Best practices for pg_dump and pg_restore ](https://learn.microsoft.com/en-us/azure/postgresql/flexible-server/how-to-pgdump-restore)
 ## Restore
-To restore the database you have to gunzip the file and then restore it, you can use the following command to gunzip the file:
+To restore the database we can use the following command:
 ```
-gunzip <file>.sql.gz
-```
-Then you can run the following command to restore the database:
-```
-pg_restore -v --no-owner --host=mydemoserver.postgres.database.azure.com --port=5432 --username=mylogin@mydemoserver --dbname=database3 <file>.sql
+gunzip <file>.sql.gz | pg_restore -v --no-owner --host=mydemoserver.postgres.database.azure.com --port=5432 --username=mylogin --dbname=database_name
 ```
