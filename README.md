@@ -46,3 +46,5 @@ or
 ```
 cat <file>.sql.gz | gunzip | pg_restore -v --no-owner --host=mydemoserver.postgres.database.azure.com --port=5432 --username=mylogin --dbname=database_name
 ```
+For further reading:
+* [Backup and Restoring Large dump](https://www.postgresql.org/docs/9.5/backup-dump.html#BACKUP-DUMP-LARGE)
