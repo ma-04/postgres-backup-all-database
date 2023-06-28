@@ -1,8 +1,10 @@
 # postgres-backup-all-database
-Backup all postgress databases to separate files with gzip and have a sha256 hash for all the files
+Backup all postgress databases to separate files with gzip and have a sha256 hash for all the files. 
 
+Note that this user must have access to all databases to be backed up.
 ## Features
 * Backup all databases to separate files
+* Backup Multiple databases on multiple servers
 * Compress the files with gzip
 * Create a sha256 hash for all the files
 * Periodically delete old backups on spanned time
@@ -19,8 +21,23 @@ Create a file with the name `.pgpass` in your home directory with the following 
 ```
 hostname:port:database:username:password
 ```
+you can use wildcard for the database name and hostname(eg. `*:*:*:username:password`)
 
-you can use wildcard for the database name and hostname
+then you have to change the permissions of the file with the following command:
+
+```
+chmod 0600 ~/.pgpass
+```
+
+After that you have to update variables in `config.env` to match your needs
+
+### Variables
+* `BACKUP_DIR` : The directory where the backups will be stored (Required)
+* `DB_USER` : The username of the database (Required)
+* `hostname_list` : The hostname of the database (Required), can be 1 host or multiple hosts separated by space. (eg. `DB_HOST="host1" "host2" host3"`)
+* `PORT` : The port of the database (Required). Can also be specified in `.pgpass` file
+* `excluded_databases` : The databases that you don't want to backup (Optional). Can be 1 database or multiple databases separated by space. (eg. `excluded_databases="database1" "database2" "database3"`)
+
 
 After that you can run the script with the following command:
 
@@ -48,3 +65,6 @@ cat <file>.sql.gz | gunzip | pg_restore -v --no-owner --host=mydemoserver.postgr
 ```
 For further reading:
 * [Backup and Restoring Large dump](https://www.postgresql.org/docs/9.5/backup-dump.html#BACKUP-DUMP-LARGE)
+
+Inspired by:
+* [postgres-backup-s3 ](https://github.com/eeshugerman/postgres-backup-s3)

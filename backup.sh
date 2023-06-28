@@ -1,28 +1,41 @@
 #!/usr/bin/env bash
 
-set -x
-
-backup_dir="backups/postgres"
-db_backup="backups/postgres/dumps-$(date -I)"
-db_user="ny9"
-hostname=localhost
-port=5432
-#export PGPASSWORD="asfdsd"
-# use export PGPASSWORD="asfdsd" if you want to use password in this script, alternatively you can use .pgpass file
-# https://www.postgresql.org/docs/9.3/libpq-pgpass.html
-# format for .pgpass file is hostname:port:database:username:password (no spaces) and place it in home directory of user running this script
-excluded_databases="template0|template1|azure*|postgres"
-# database to exclude from backup, format it with | as separator, example: "template0|template1|azure*|postgres"
-# can accept regex, can be empty
+#set -x
+set -e
+trap 'cleanup' ERR
+source env.conf
 
 mkdir -p "$db_backup"
 
-for db in $(psql "sslmode=require host=$hostname port=$port dbname=postgres user=$db_user" -t -c "select datname from pg_database where not datistemplate" | grep '\S' | awk '{$1=$1};1' | grep -vE $excluded_databases); do
-    echo "Backing up $db"
-    pg_dump -Fc --create "sslmode=require host=$hostname port=5432 dbname=$db user=$db_user" | gzip > "$db_backup/$db-$(date -I).sql.gz"
-    sha256sum "$db_backup/$db-$(date -I).sql.gz" | sed 's, .*/,  ,' > "$db_backup/$db-$(date -I).sql.gz.sha256"
-    #pg_dump "sslmode=require host=$hostname port=5432 dbname=$db user=$db_user" | gzip > "$db_backup/$db-$(date -I).sql.gz"
+function cleanup {
+    echo "Error occurred, cleaning up..."
+    rm -rf "$db_backup"
+}
+
+
+mkdir -p "$db_backup"
+
+for hostname in "${hostname_list[@]}"; do
+    echo "Backing up databases from $hostname"
+    mkdir -p "$db_backup/$hostname"
+    for db in $(psql "sslmode=require host=$hostname port=$port dbname=postgres user=$db_user" -t -c "select datname from pg_database where not datistemplate" | grep '\S' | awk '{$1=$1};1' | grep -vE $excluded_databases); do
+        echo "$hostname : Backing up $db"
+        # grant database access to the user running this script to the database to be backed up
+        # This is a just in case measure, if the user running this script does not have access to the database, the backup script will fail
+        psql "sslmode=prefer host=$hostname port=$port dbname=$db user=$db_user" -c "GRANT CONNECT ON DATABASE $db TO $db_user" 1>/dev/null
+        psql "sslmode=prefer host=$hostname port=$port dbname=$db user=$db_user" -c "GRANT USAGE ON SCHEMA public TO $db_user" 1>/dev/null
+        psql "sslmode=prefer host=$hostname port=$port dbname=$db user=$db_user" -c "GRANT SELECT ON ALL TABLES IN SCHEMA public TO $db_user" 1>/dev/null
+
+        if ! pg_dump -Fc "sslmode=prefer host=$hostname port=5432 dbname=$db user=$db_user" | gzip > "$db_backup/$hostname/$db-$(date -I).sql.gz"; then
+            echo "pg_dump failed due to a permission error. Exiting..."
+            exit 1
+        fi
+
+        sha256sum "$db_backup/$hostname/$db-$(date -I).sql.gz" | sed 's, .*/,  ,' > "$db_backup/$hostname/$db-$(date -I).sql.gz.sha256"
+        #pg_dump "sslmode=require host=$hostname port=5432 dbname=$db user=$db_user" | gzip > "$db_backup/$hostname/$db-$(date -I).sql.gz"
+    done
 done
+
 
 # The following will remove backups older than 7 days, except for Thursday backups from last month and first day of month backups from last year
 # remove backups older than 7 days, except for Thursday backups from last month and first day of month backups from last year
