@@ -2,15 +2,9 @@
 
 #set -x
 set -e
-trap 'cleanup' ERR
 source env.conf
 
 mkdir -p "$db_backup"
-
-function cleanup {
-    echo "Error occurred, cleaning up..."
-    rm -rf "$db_backup"
-}
 
 
 mkdir -p "$db_backup"
