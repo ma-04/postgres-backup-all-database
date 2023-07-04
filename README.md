@@ -29,7 +29,11 @@ then you have to change the permissions of the file with the following command:
 chmod 0600 ~/.pgpass
 ```
 
-After that you have to update variables in `config.env` to match your needs
+Copy the `example.env.conf` file to `env.conf` with the following command:
+```bash
+cp example.env.conf env.conf
+```
+After that you have to update variables in `env.conf` to match your needs
 
 ### Variables
 * `BACKUP_DIR` : The directory where the backups will be stored (Required)

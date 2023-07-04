@@ -6,9 +6,6 @@ source env.conf
 
 mkdir -p "$db_backup"
 
-
-mkdir -p "$db_backup"
-
 for hostname in "${hostname_list[@]}"; do
     echo "Backing up databases from $hostname"
     mkdir -p "$db_backup/$hostname"
