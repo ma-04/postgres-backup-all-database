@@ -4,9 +4,9 @@
 set -e
 source env.conf
 temp_dir="restore/tmp"
+export PGSSLMODE=prefer
 
 mkdir -p "${temp_dir}"
-
 # This will restore all databases from the latest backup directory to a single database server, make sure you have enough space for all the databases
 # restoring to multiple servers is not supported at this time
 
@@ -41,5 +41,5 @@ rm -rf *.sha256
 # restore all databases from the temp directory
 for backup in *.sql.gz; do
     echo "Restoring ${backup}"
-    gunzip -c "${backup}" | psql "sslmode=prefer host=${hostname_list[0]} port=${port} dbname=${backup%%-*} user=${db_user}"
+    gunzip -c "${backup}" | pg_restore -v --no-owner --port=$PORT --host=${restore_host} --dbname=${backup%%-*} --username=${db_user}
 done
