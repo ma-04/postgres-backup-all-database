@@ -41,7 +41,7 @@ After that you have to update variables in `env.conf` to match your needs
 * `hostname_list` : The hostname of the database (Required), can be 1 host or multiple hosts separated by space. (eg. `DB_HOST="host1" "host2" host3"`)
 * `PORT` : The port of the database (Required). MUST also be specified in `.pgpass` file
 * `excluded_databases` : The databases that you don't want to backup (Optional). Can be 1 database or multiple databases separated by space. (eg. `excluded_databases="database1" "database2" "database3"`)
-
+* `restore_host` : The hostname of the database that you want to restore to (Optional). Currently only supports 1 host. (eg. `restore_host="host1"`)
 
 After that you can run the script with the following command:
 
