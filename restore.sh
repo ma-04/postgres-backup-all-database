@@ -4,7 +4,6 @@
 set -e
 source env.conf
 temp_dir="restore/tmp"
-export PGSSLMODE=prefer
 
 mkdir -p "${temp_dir}"
 # This will restore all databases from the latest backup directory to a single database server, make sure you have enough space for all the databases

@@ -3,21 +3,22 @@
 #set -x
 set -e
 source env.conf
+export PGSSLMODE=prefer
 
 mkdir -p "$db_backup"
 
 for hostname in "${hostname_list[@]}"; do
     echo "Backing up databases from $hostname"
     mkdir -p "$db_backup/$hostname"
-    for db in $(psql "sslmode=require host=$hostname port=$port dbname=postgres user=$db_user" -t -c "select datname from pg_database where not datistemplate" | grep '\S' | awk '{$1=$1};1' | grep -vE $excluded_databases); do
+    for db in $(psql "host=$hostname dbname=postgres user=$db_user" -t -c "select datname from pg_database where not datistemplate" | grep '\S' | awk '{$1=$1};1' | grep -vE $excluded_databases); do
         echo "$hostname : Backing up $db"
         # grant database access to the user running this script to the database to be backed up
         # This is a just in case measure, if the user running this script does not have access to the database, the backup script will fail
-        psql "sslmode=prefer host=$hostname port=$port dbname=$db user=$db_user" -c "GRANT CONNECT ON DATABASE $db TO $db_user" 1>/dev/null
-        psql "sslmode=prefer host=$hostname port=$port dbname=$db user=$db_user" -c "GRANT USAGE ON SCHEMA public TO $db_user" 1>/dev/null
-        psql "sslmode=prefer host=$hostname port=$port dbname=$db user=$db_user" -c "GRANT SELECT ON ALL TABLES IN SCHEMA public TO $db_user" 1>/dev/null
+        psql "host=$hostname dbname=$db user=$db_user" -c "GRANT CONNECT ON DATABASE $db TO $db_user" 1>/dev/null
+        psql "host=$hostname dbname=$db user=$db_user" -c "GRANT USAGE ON SCHEMA public TO $db_user" 1>/dev/null
+        psql "host=$hostname dbname=$db user=$db_user" -c "GRANT SELECT ON ALL TABLES IN SCHEMA public TO $db_user" 1>/dev/null
 
-        if ! pg_dump -Fc "sslmode=prefer host=$hostname port=5432 dbname=$db user=$db_user" | gzip > "$db_backup/$hostname/$db-$(date -I).sql.gz"; then
+        if ! pg_dump -Fc "host=$hostname dbname=$db user=$db_user" | gzip > "$db_backup/$hostname/$db-$(date -I).sql.gz"; then
             echo "pg_dump failed due to a permission error. Exiting..."
             exit 1
         fi
