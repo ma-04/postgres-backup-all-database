@@ -37,8 +37,14 @@ echo "Press enter to continue"
 read
 rm -rf *.sha256
 
+
 # restore all databases from the temp directory
 for backup in *.sql.gz; do
     echo "Restoring ${backup}"
-    gunzip -c "${backup}" | pg_restore -v --no-owner --port=$PORT --host=${restore_host} --dbname=${backup%%-*} --username=${db_user}
+    dbname=${backup%%-*}
+    if [ "${create_if_not_exists}" = true ]; then
+        echo "Creating database ${dbname} if it doesn't exist"
+        psql -U ${restore_admin_user} -h ${restore_host} -p $PORT -d postgres -c "SELECT 1 FROM pg_database WHERE datname='${dbname}'" | grep -q 1 || psql -U ${restore_admin_user} -h ${restore_host} -p $PORT -d postgres -c "CREATE DATABASE ${dbname}"
+    fi
+    gunzip -c "${backup}" | pg_restore -v --no-owner --no-acl --port=$PORT --host=${restore_host} --dbname=${dbname} --username=${restore_admin_user}
 done
