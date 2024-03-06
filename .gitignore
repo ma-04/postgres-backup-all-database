@@ -1,3 +1,5 @@
 env.conf
 backups/
 restore
+errors.log
+pgpass.conf

@@ -20,6 +20,7 @@ fi
 
 # copy all latest backup files from backup directory to the temp directory
 find "${backup_dir}"/"${latest_backup}" -type f -exec cp {} "${temp_dir}"/ \;
+cwd=$(pwd)
 
 cd "${temp_dir}"
 
@@ -38,13 +39,28 @@ read
 rm -rf *.sha256
 
 
+
 # restore all databases from the temp directory
 for backup in *.sql.gz; do
     echo "Restoring ${backup}"
     dbname=${backup%%-*}
-    if [ "${create_if_not_exists}" = true ]; then
-        echo "Creating database ${dbname} if it doesn't exist"
-        psql -U ${restore_admin_user} -h ${restore_host} -p $PORT -d postgres -c "SELECT 1 FROM pg_database WHERE datname='${dbname}'" | grep -q 1 || psql -U ${restore_admin_user} -h ${restore_host} -p $PORT -d postgres -c "CREATE DATABASE ${dbname}"
+    # create a new user for the database with the same name as the database and create a random 32 character password and save it to file pgpass.conf
+    if [ "${create_user}" = true ]; then
+        PASSWORD=$(pwgen -s 64 1)
+        echo "Creating user ${dbname} if it doesn't exist"
+        psql -U ${restore_admin_user} -h ${restore_host} -p $PORT -d postgres -c "SELECT 1 FROM pg_user WHERE usename='${dbname}'" | grep -q 1 || psql -U ${restore_admin_user} -h ${restore_host} -p $PORT -d postgres -c "CREATE USER ${dbname} WITH PASSWORD '$PASSWORD'"
+        echo "${restore_host}:${PORT}:${dbname}:${dbname}:${PASSWORD}" >> $cwd/pgpass.conf
     fi
-    gunzip -c "${backup}" | pg_restore -v --no-owner --no-acl --port=$PORT --host=${restore_host} --dbname=${dbname} --username=${restore_admin_user}
+    # grant database permissions to the user for the database and set the user as the owner of the database
+    if [ "${grant_permissions}" = true ] && [ "${create_user}" = true ]; then
+        echo "Granting permissions to user ${dbname} for database ${dbname}"
+        psql -U ${restore_admin_user} -h ${restore_host} -p $PORT -d ${dbname} -c "GRANT ALL ON DATABASE ${dbname} TO ${dbname}"
+        psql -U ${restore_admin_user} -h ${restore_host} -p $PORT -d ${dbname} -c "GRANT ALL PRIVILEGES ON DATABASE ${dbname} TO ${dbname}"
+        psql -U ${restore_admin_user} -h ${restore_host} -p $PORT -d ${dbname} -c "GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO ${dbname}"
+        psql -U ${restore_admin_user} -h ${restore_host} -p $PORT -d ${dbname} -c "ALTER SCHEMA public OWNER TO ${dbname}"
+        psql -U ${restore_admin_user} -h ${restore_host} -p $PORT -d ${dbname} -c "ALTER DATABASE ${dbname} OWNER TO ${dbname}"
+        psql -U ${restore_admin_user} -h ${restore_host} -p $PORT -d ${dbname} -c "REVOKE ALL ON DATABASE ${dbname} FROM PUBLIC;"
+    fi
+
+    gunzip -c "${backup}" | pg_restore -v --no-owner --no-acl --create --port=$PORT --host=${restore_host} --dbname=${dbname} --username=${restore_admin_user}
 done
