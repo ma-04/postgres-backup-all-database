@@ -36,12 +36,17 @@ cp example.env.conf env.conf
 After that you have to update variables in `env.conf` to match your needs
 
 ### Variables
-* `BACKUP_DIR` : The directory where the backups will be stored (Required)
-* `DB_USER` : The username of the database (Required)
-* `hostname_list` : The hostname of the database (Required), can be 1 host or multiple hosts separated by space. (eg. `DB_HOST="host1" "host2" host3"`)
-* `PORT` : The port of the database (Required). MUST also be specified in `.pgpass` file
-* `excluded_databases` : The databases that you don't want to backup (Optional). Can be 1 database or multiple databases separated by space. (eg. `excluded_databases="database1" "database2" "database3"`)
-* `restore_host` : The hostname of the database that you want to restore to (Optional). Currently only supports 1 host. (eg. `restore_host="host1"`)
+* `BACKUP_DIR` : The directory where the backups will be stored (Required) (Restore only)
+* `db_backup` : For database backup, and formats for hosts (Required) (Backup only)
+* `DB_USER` : The username of the database (Required) (Backup only)
+* `hostname_list` : The hostname of the database (Required), can be 1 host or multiple hosts separated by space. (eg. `DB_HOST="host1" "host2" host3"`) (Backup only)
+* `PORT` : The port of the database (Required). MUST also be specified in `.pgpass` file (Backup and Restore)
+* `excluded_databases` : The databases that you don't want to backup (Optional). Can be 1 database or multiple databases separated by space. (eg. `excluded_databases="database1" "database2" "database3"`) (Backup And restore)
+
+* `restore_host` : The hostname of the database that you want to restore to. Currently only supports 1 host. (eg. `restore_host="host1"`) (Restore only)
+* `restore_admin_user` : The Admin/root username of the restore target that you want to restore to. Currently only supports 1 user. (eg. `restore_admin_user="username"`)   (Restore only)
+* `create_user` : A new user will be created for every database with the same name as the database with full permissions for the database, for best result pair it with `grant_permissions`. (Optional) (Restore only)
+* `grant_permissions` : The permissions that the new user will have. Also removes the database permission from other users and public. (Optional) (Restore only)
 
 After that you can run the script with the following command:
 
