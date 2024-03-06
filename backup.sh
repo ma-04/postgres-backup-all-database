@@ -19,7 +19,7 @@ for hostname in "${hostname_list[@]}"; do
         psql "host=$hostname dbname=$db user=$db_user" -c "GRANT USAGE ON SCHEMA public TO $db_user" 2> errors.log
         psql "host=$hostname dbname=$db user=$db_user" -c "GRANT SELECT ON ALL TABLES IN SCHEMA public TO $db_user" 2> errors.log
         psql "host=$hostname dbname=$db user=$db_user" -c "GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA public TO $db_user" 2> errors.log
-        if ! pg_dump -Fc "host=$hostname dbname=$db user=$db_user" | gzip > "$db_backup/$hostname/$db-$(date -I).sql.gz"; then
+        if ! pg_dump -Fc -O --no-privileges "host=$hostname dbname=$db user=$db_user" | gzip > "$db_backup/$hostname/$db-$(date -I).sql.gz"; then
             echo "pg_dump failed due to a permission error. Exiting..."
             exit 1
         fi

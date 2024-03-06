@@ -63,6 +63,8 @@ Suggested cron job:
 Suggested Reading: 
 * [Migrate Using Pg_dump and pg_restore](https://learn.microsoft.com/en-us/azure/postgresql/migrate/how-to-migrate-using-dump-and-restore)
 * [Best practices for pg_dump and pg_restore ](https://learn.microsoft.com/en-us/azure/postgresql/flexible-server/how-to-pgdump-restore)
+* [Backup and Restore](https://www.postgresql.org/docs/9.5/backup-dump.html)
+* [Pg_dump](https://www.postgresql.org/docs/current/app-pgdump.html)
 ## Restore
 To restore the database we can use the following command:
 ```
