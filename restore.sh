@@ -51,16 +51,18 @@ for backup in *.sql.gz; do
         psql -U ${restore_admin_user} -h ${restore_host} -p $PORT -d postgres -c "SELECT 1 FROM pg_user WHERE usename='${dbname}'" | grep -q 1 || psql -U ${restore_admin_user} -h ${restore_host} -p $PORT -d postgres -c "CREATE USER ${dbname} WITH PASSWORD '$PASSWORD'"
         echo "${restore_host}:${PORT}:${dbname}:${dbname}:${PASSWORD}" >> $cwd/pgpass.conf
     fi
+    gunzip -c "${backup}" | pg_restore -v --no-owner --no-acl --create --port=$PORT --host=${restore_host} --dbname=postgres --username=${restore_admin_user}
+
     # grant database permissions to the user for the database and set the user as the owner of the database
     if [ "${grant_permissions}" = true ] && [ "${create_user}" = true ]; then
         echo "Granting permissions to user ${dbname} for database ${dbname}"
-        psql -U ${restore_admin_user} -h ${restore_host} -p $PORT -d ${dbname} -c "GRANT ALL ON DATABASE ${dbname} TO ${dbname}"
-        psql -U ${restore_admin_user} -h ${restore_host} -p $PORT -d ${dbname} -c "GRANT ALL PRIVILEGES ON DATABASE ${dbname} TO ${dbname}"
-        psql -U ${restore_admin_user} -h ${restore_host} -p $PORT -d ${dbname} -c "GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO ${dbname}"
-        psql -U ${restore_admin_user} -h ${restore_host} -p $PORT -d ${dbname} -c "ALTER SCHEMA public OWNER TO ${dbname}"
-        psql -U ${restore_admin_user} -h ${restore_host} -p $PORT -d ${dbname} -c "ALTER DATABASE ${dbname} OWNER TO ${dbname}"
+        psql -U ${restore_admin_user} -h ${restore_host} -p $PORT -d ${dbname} -c "GRANT ${dbname} TO ${restore_admin_user};"
+        psql -U ${restore_admin_user} -h ${restore_host} -p $PORT -d ${dbname} -c "GRANT ALL ON DATABASE ${dbname} TO ${dbname};"
+        psql -U ${restore_admin_user} -h ${restore_host} -p $PORT -d ${dbname} -c "GRANT ALL PRIVILEGES ON DATABASE ${dbname} TO ${dbname};"
+        psql -U ${restore_admin_user} -h ${restore_host} -p $PORT -d ${dbname} -c "GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO ${dbname};"
+        psql -U ${restore_admin_user} -h ${restore_host} -p $PORT -d ${dbname} -c "ALTER SCHEMA public OWNER TO ${dbname};"
+        psql -U ${restore_admin_user} -h ${restore_host} -p $PORT -d ${dbname} -c "ALTER DATABASE ${dbname} OWNER TO ${dbname};"
         psql -U ${restore_admin_user} -h ${restore_host} -p $PORT -d ${dbname} -c "REVOKE ALL ON DATABASE ${dbname} FROM PUBLIC;"
     fi
 
-    gunzip -c "${backup}" | pg_restore -v --no-owner --no-acl --create --port=$PORT --host=${restore_host} --dbname=${dbname} --username=${restore_admin_user}
 done
