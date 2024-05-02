@@ -3,3 +3,4 @@ backups/
 restore
 errors.log
 pgpass.conf
+temp/*
