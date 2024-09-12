@@ -64,9 +64,9 @@ for backup in *.sql.gz; do
         psql -U ${restore_admin_user} -h ${restore_host} -p $PORT -d ${dbname} -c "ALTER DATABASE ${dbname} OWNER TO ${dbname};"
         psql -U ${restore_admin_user} -h ${restore_host} -p $PORT -d ${dbname} -c "REASSIGN OWNED BY ${restore_admin_user} TO ${dbname};"
         # for future pg_dump backups
-        psql -U ${restore_admin_user} -h ${dbname} -p $PORT -d ${dbname} -c "GRANT CONNECT ON DATABASE ${dbname} TO ${restore_admin_user};"
-        psql -U ${restore_admin_user} -h ${dbname} -p $PORT -d ${dbname} -c "GRANT SELECT ON ALL TABLES IN SCHEMA public TO ${restore_admin_user}"
-        psql -U ${restore_admin_user} -h ${dbname} -p $PORT -d ${dbname} -c "GRANT SELECT ON ALL SEQUENCES IN SCHEMA public TO ${restore_admin_user};"
+        psql -U ${restore_admin_user} -h ${restore_host} -p $PORT -d ${dbname} -c "GRANT CONNECT ON DATABASE ${dbname} TO ${restore_admin_user};"
+        psql -U ${restore_admin_user} -h ${restore_host} -p $PORT -d ${dbname} -c "GRANT SELECT ON ALL TABLES IN SCHEMA public TO ${restore_admin_user}"
+        psql -U ${restore_admin_user} -h ${restore_host} -p $PORT -d ${dbname} -c "GRANT SELECT ON ALL SEQUENCES IN SCHEMA public TO ${restore_admin_user};"
     fi
 
 done
