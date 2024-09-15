@@ -7,12 +7,11 @@ Note that this user must have access to all databases to be backed up.
 * Backup Multiple databases on multiple servers
 * Compress the files with gzip
 * Create a sha256 hash for all the files
-* Periodically delete old backups on spanned time
+* Periodically delete old backups on spanned time by setting ``keep_old_backups`` to `false` in `env.conf`
     * Any backup less than 7 days old will be kept
     * Any backup less than 4 weeks old will be kept
     * Any backup "first day of month and is less than a year old" will be kept
     * Rest of the backups will be deleted
-        * If you don't want to delete old backups you can safely remove the scripts part that deletes the old backups
 
 ## Usage
 

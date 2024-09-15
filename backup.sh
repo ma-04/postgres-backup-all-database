@@ -31,20 +31,33 @@ done
 
 
 # The following will remove backups older than 7 days, except for Thursday backups from last month and first day of month backups from last year
-# remove backups older than 7 days, except for Thursday backups from last month and first day of month backups from last year
 # Can be safely removed if you don't want to remove old backups
-list_of_backups=$(ls -l "${backup_dir}" | grep -oE "[0-9]{4}-[0-9]{2}-[0-9]{2}$")
 
-for backup in "${list_of_backups[@]}"; do
-    if [[ "${backup}" > $(date -I -d "7 days ago") ]]; then
-        echo "${backup} is backup from last 7 days, keeping it"
-    elif
-        [[ $(date -d "${backup}" +%u) == 4 && "${backup}" > $(date -I -d "1 month ago") ]]; then
-        echo "${backup} was Thursday and is less than a month old, keeping it"
-    elif
-        [[ $(date -d "${backup}" +%d) == 01 && "${backup}" > $(date -I -d "1 year ago") ]]; then
-        echo "${backup} was first day of month and is less than a year old, keeping it"
-    else
-        rm -rf "${backup_dir}"/dumps-"${backup}"
-    fi
-done
+if [ "$keep_old_backups" = false ]; then
+    # Find all backup files and extract dates
+    list_of_backups=($(find "${backup_dir}" -type f -name "dumps-*" | grep -oE "[0-9]{4}-[0-9]{2}-[0-9]{2}$"))
+
+    for backup in "${list_of_backups[@]}"; do
+        backup_date=$(date -d "${backup}" +%Y-%m-%d)
+        
+        # Check if the backup is from the last 7 days
+        if [[ "${backup_date}" > $(date -I -d "7 days ago") ]]; then
+            echo "${backup} is backup from last 7 days, keeping it"
+        
+        # Check if the backup is a Thursday backup from the last month
+        elif [[ $(date -d "${backup_date}" +%u) -eq 4 && "${backup_date}" > $(date -I -d "1 month ago") ]]; then
+            echo "${backup} was Thursday and is less than a month old, keeping it"
+        
+        # Check if the backup is from the first day of the month in the last year
+        elif [[ $(date -d "${backup_date}" +%d) -eq 01 && "${backup_date}" > $(date -I -d "1 year ago") ]]; then
+            echo "${backup} was first day of month and is less than a year old, keeping it"
+        
+        # Remove old backups
+        else
+            rm -rf "${backup_dir}/dumps-${backup}"
+            echo "Removed old backup: ${backup}"
+        fi
+    done
+else
+    echo "Not removing old backups"
+fi
